@@ -1,0 +1,17 @@
+name: Get Termux APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Termux APK from GitHub Releases
+        run: |
+          curl -L -o termux.apk https://github.com/termux/termux-app/releases/download/v0.118.3/termux-app_v0.118.3+github-debug_arm64-v8a.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: termux-apk
+          path: termux.apk
