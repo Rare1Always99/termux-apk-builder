@@ -27,10 +27,14 @@ jobs:
       
       - name: Setup Android SDK
         run: |
-          sudo apt update
-          sudo apt install -y android-sdk
-          echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
-          echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-latest.zip
+          unzip commandlinetools-linux-latest.zip -d $HOME/android-sdk
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/bin:$PATH
+          echo "y" | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30"
       
       - name: Clone target repo
         run: |
@@ -43,10 +47,15 @@ jobs:
           cd target
           if [ -f "gradlew" ]; then
             chmod +x gradlew
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug --no-daemon
           else
-            echo "No gradlew found"
-            exit 1
+            echo "No gradlew found, looking for build.gradle"
+            if [ -f "build.gradle" ]; then
+              gradle build
+            else
+              echo "No build system found"
+              exit 1
+            fi
           fi
       
       - name: Upload APK
